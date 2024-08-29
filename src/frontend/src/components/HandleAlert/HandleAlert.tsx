@@ -18,7 +18,7 @@ const HandleAlert: React.FC<HandleAlertProps> = ({
 	}, [notification]);
 
 	const close_alert = () => {
-		setTimeout(() => setAlert(false), 1000000);
+		setTimeout(() => setAlert(false), 3000);
 	};
 
 	const shortText = (text: string) => {
@@ -28,7 +28,7 @@ const HandleAlert: React.FC<HandleAlertProps> = ({
 	};
 
 	return (
-		<div className='absolute top-8 right-8 w-[400px] h-[100px] rounded-2xl p-1 flex items-center justify-between bg-gray-300 shadow-lg md:top-4 md:right-4 md:w-[250px] md:h-[100px] px-5'>
+		<div className='absolute top-8 right-8 w-[400px] h-[100px] rounded-2xl p-1 flex items-center justify-between bg-gray-300 shadow-lg md:top-4 md:right-4 md:w-[250px] md:h-[100px] px-1'>
 			<div className='w-[80px] h-[80px] md:w-[60px] md:h-[60px] rounded-full border border-black overflow-hidden'>
 				<img
 					src={notification.img}

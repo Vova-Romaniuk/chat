@@ -40,7 +40,6 @@ const Chat: React.FC<ChatProps> = ({
 
 	const getFriendMessage = async (text: string) => {
 		const date = new Date();
-		setAlert(true);
 
 		var moment_date = moment(date).format("DD/MM/YY hh:mm:ss");
 		let res_ls = messages;
@@ -69,6 +68,7 @@ const Chat: React.FC<ChatProps> = ({
 		};
 
 		setMessages(res_ls);
+		setAlert(true);
 	};
 
 	const onSubmit = (e: React.FormEvent) => {
