@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
+const ChatSchema = require("./Chat");
 
 const UserSchema = new mongoose.Schema({
 	fullName: {
 		type: String,
 		required: true,
 	},
-	username: {
+	userName: {
 		type: String,
 		required: true,
 		unique: true,
@@ -24,6 +25,7 @@ const UserSchema = new mongoose.Schema({
 		default:
 			"https://i2.wp.com/vdostavka.ru/wp-content/uploads/2019/05/no-avatar.png?fit=512%2C512&ssl=1",
 	},
+	chats: [ChatSchema],
 });
 
-module.exports = User = mongoose.model("user", UserSchema);
+module.exports = mongoose.model("User", UserSchema);

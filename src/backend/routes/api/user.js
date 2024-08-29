@@ -1,11 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
-const config = require("config");
+const auth = require("../../middleware/auth");
 const bcrypt = require("bcryptjs");
 const { check, validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 const User = require("../../models/User.js");
+const generateDefaultChats = require("../../constants/defaultsChats");
 
 // @route    POST
 // @desc     Authenticate user (Login)
@@ -49,7 +51,7 @@ router.post(
 
 			jwt.sign(
 				payload,
-				config.get("jwtSecret"),
+				process.env.JWT_SECRET,
 				{
 					expiresIn: "240h",
 				},
@@ -66,14 +68,11 @@ router.post(
 	}
 );
 
-// @route    POST
-// @desc     Register user
-// @access   Public
 router.post(
 	"/register",
 	[
 		check("fullName", "Full name is required!").not().isEmpty(),
-		check("username", "Username is required!").not().isEmpty(),
+		check("userName", "Username is required!").not().isEmpty(),
 		check("email", "Please include a valid email!").isEmail(),
 		check(
 			"password",
@@ -86,11 +85,11 @@ router.post(
 			return res.status(400).json({ errors: errors.array() });
 		}
 
-		const { fullName, email, password, username } = req.body;
+		const { fullName, email, password, userName } = req.body;
 
 		try {
 			const userEmail = await User.findOne({ email: email });
-			const userName = await User.findOne({ username: username });
+			const existingUserName = await User.findOne({ userName: userName });
 
 			if (userEmail) {
 				return res.status(409).send({
@@ -99,18 +98,21 @@ router.post(
 				});
 			}
 
-			if (userName) {
+			if (existingUserName) {
 				return res.status(409).send({
 					errors: "Username already exists!",
-					field: "username",
+					field: "userName",
 				});
 			}
+
+			const defaultChats = generateDefaultChats();
 
 			const user = new User({
 				fullName,
 				email,
 				password,
-				username,
+				userName,
+				chats: defaultChats,
 			});
 
 			const salt = await bcrypt.genSalt(10);
@@ -126,12 +128,13 @@ router.post(
 
 			jwt.sign(
 				payload,
-				config.get("jwtSecret"),
+				process.env.JWT_SECRET,
 				{
 					expiresIn: "240h",
 				},
 				(err, token) => {
 					if (err) throw err;
+
 					res.json({ token: token });
 				}
 			);
@@ -141,5 +144,21 @@ router.post(
 		}
 	}
 );
+
+router.get("/user", auth, async (req, res) => {
+	try {
+		const userId = mongoose.Types.ObjectId(req.user.id);
+		const user = await User.findById(userId);
+
+		if (!user) {
+			return res.status(404).json({ msg: "User not found" });
+		}
+
+		res.json(user);
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send("Server error");
+	}
+});
 
 module.exports = router;
